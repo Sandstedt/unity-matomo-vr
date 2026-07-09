@@ -3,6 +3,7 @@
 //----------------------------------------
 using System.Collections;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using Lumpn.Matomo.Utils;
 using UnityEngine;
 
@@ -10,9 +11,7 @@ namespace Lumpn.Matomo
 {
     public static class MatomoSessionExtensions
     {
-        private static readonly Dictionary<string, string> emptyParameters = new Dictionary<string, string>();
-
-        public static IEnumerator RecordSystemInfo(this MatomoSession session)
+        public static async UniTask<bool> RecordSystemInfo(this MatomoSession session)
         {
             var parameters = new Dictionary<string, string>
             {
@@ -23,23 +22,22 @@ namespace Lumpn.Matomo
                 { "dimension1", SystemInfo.processorType},
                 { "dimension2", SystemInfo.graphicsDeviceName},
             };
-
-            return session.Record("SystemInfo", 0f, parameters);
+            
+            return await session.Record("SystemInfo", 0f, parameters);
         }
 
-        public static IEnumerator RecordEvent(this MatomoSession session, string eventName, float eventTime)
+        public static async UniTask<bool> RecordEvent(this MatomoSession session, string eventCategory, string eventAction, string eventName, float eventValue, float time, IReadOnlyDictionary<string, string> parameters, bool debug = false)
         {
-            return session.Record(eventName, eventTime, emptyParameters);
+            using var request = session.CreateWebRequestEvent(eventCategory, eventAction, eventName, eventValue, (int)time, parameters, debug);
+            var asyncOp = await request.SendWebRequest().ToUniTask();
+            return asyncOp.responseCode == 204;
         }
 
-        public static IEnumerator Record(this MatomoSession session, string page, float time, IReadOnlyDictionary<string, string> parameters)
+        public static async UniTask<bool> Record(this MatomoSession session, string page, float time, IReadOnlyDictionary<string, string> parameters, bool debug = false)
         {
-            using (var request = session.CreateWebRequest(page, (int)time, parameters, false))
-            {
-                yield return request.SendWebRequest();
-
-                Debug.Assert(request.responseCode == 204, request.error);
-            }
+            using var request = session.CreateWebRequest(page, (int)time, parameters, debug);
+            var asyncOp = await request.SendWebRequest().ToUniTask();
+            return asyncOp.responseCode == 204;
         }
 
         private static string GetUserAgent(string unityVersion, RuntimePlatform platform)

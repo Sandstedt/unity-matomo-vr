@@ -1,7 +1,9 @@
 {
     "name": "Lumpn.Matomo",
     "rootNamespace": "",
-    "references": [],
+    "references": [
+        "UniTask"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

@@ -2,6 +2,8 @@
 // MIT License
 // Copyright(c) 2021 Jonas Boetel
 //----------------------------------------
+
+using System;
 using UnityEngine;
 using Lumpn.Matomo.Utils;
 
@@ -19,11 +21,13 @@ namespace Lumpn.Matomo
         [Tooltip("The project to track. In Matomo referred to as `website`.")]
         [SerializeField] private string websiteUrl = "http://example.com";
         [SerializeField] private int websiteId = 1;
+        [Tooltip("Bump this in case you do any mayor changes, so we can segment the data in the backend. Bump if you for example has changed your tutorial stucture so page names no longer match with previous versions.")]
+        [SerializeField] private int trackingVersion = 1;
 
         public MatomoSession CreateSession(string userId = null)
         {
             var userHash = string.IsNullOrEmpty(userId) ? GetRandomBytes() : HashUtils.HashMD5(userId);
-            return MatomoSession.Create(matomoUrl, websiteUrl, websiteId, userHash);
+            return MatomoSession.Create(matomoUrl, websiteUrl, websiteId, userHash, trackingVersion);
         }
 
         private static byte[] GetRandomBytes()
