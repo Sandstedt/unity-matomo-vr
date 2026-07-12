@@ -10,7 +10,6 @@ namespace Lumpn.Matomo.Utils
     {
         public static string GetDevice(RuntimePlatform platform)
         {
-            Debug.Log("### platform: " + platform);
             switch (platform)
             {
                 case RuntimePlatform.OSXEditor:
